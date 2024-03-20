@@ -2,16 +2,18 @@
 {
     internal class Manager
     {
-        private IUI UI { get; init; }
+        private IUI TheUI { get; init; }
+        private IHandler TheHandler { get; init; }
 
         internal Manager()
         {
-            UI = new ConsoleUI();
+            TheHandler = new GarageHandler();
+            TheUI = new ConsoleUI(TheHandler);
         }
 
         internal void Run()
         {
-            UI.Run();
+            TheUI.Run();
         }
     }
 }
