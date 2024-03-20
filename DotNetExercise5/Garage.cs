@@ -13,7 +13,9 @@ namespace DotNetExercise5
         }
         public IEnumerator<T> GetEnumerator()
         {
-            return ((IEnumerable<T>)Vehicles).GetEnumerator();
+            foreach (T vehicle in Vehicles)
+                if (vehicle != null)
+                    yield return vehicle;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
