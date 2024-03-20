@@ -10,12 +10,7 @@
             ConsoleUIntQuestion capacityQuestion = new ConsoleUIntQuestion("Vilken kapacitet ska garaget ha?", "Det är inte en giltig kapacitet.");
             MainMenu.Add(new MenuEntry("Öppna ett nytt garage", () => handler.MakeNewGarage(capacityQuestion.Ask())));
         }
-        // I feel that I am missing something here.
-        void IUI.Run()
-        {
-            this.Run();
-        }
-        internal void Run()
+        public void Run()
         {
             MainMenu.Run();
         }
