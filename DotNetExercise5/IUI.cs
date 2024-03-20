@@ -2,5 +2,6 @@
 {
     internal interface IUI
     {
+        internal void Run();
     }
 }
