@@ -20,15 +20,19 @@
                     Console.ReadLine();
                 }));
             ConsoleStringQuestion registrationNumberQuestion = new ConsoleStringQuestion("Vilket registreringsnummer ska fordonet ha?");
+            ConsoleMenu<VehicleColor> colorMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
+            foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
+                colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
+
             ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
             MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
                 {
-                    switch (handler.Add(new Vehicle(registrationNumberQuestion.Ask(), VehicleColor.Black, numberofWheelsQuestion.Ask())))
+                    switch (handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())))
                     {
                         case AddResult.Success:
-                            Console.WriteLine("Det gick bra");
+                            Console.WriteLine("Det gick bra.");
                             break;
                         case AddResult.NoGarage:
                             Console.WriteLine("Det finns inget garage.");
