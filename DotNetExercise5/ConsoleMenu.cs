@@ -2,31 +2,29 @@
 
 namespace DotNetExercise5
 {
-    // Any further attempts to make this thing collection-initializer-compatible at this stage is likely to take up my attention for too long.
-
-    // It might be worthwhile to separate menu entry handling from console handling somehow.
-    internal class ConsoleMenu
+    internal class ConsoleMenu<T>
     {
-        private Dictionary<string, MenuEntry> Entries { get; } = new Dictionary<string, MenuEntry>();
+        private Dictionary<string, MenuEntry<T>> Entries { get; } = new Dictionary<string, MenuEntry<T>>();
         private int NextKey { get; set; } = 0;
         private string TextAbove { get; init; }
         private string TextBelow { get; init; }
         // This text is responsible for informing the user that they need to press "Enter" to return to the menu. This behavior is not configurable at this time.
         private string TextForInvalidInput { get; init; }
-        public ConsoleMenu(string textAbove, string textBelow, string textForInvalidInput)
+        internal ConsoleMenu(string textAbove, string textBelow, string textForInvalidInput)
         {
             TextAbove = textAbove;
             TextBelow = textBelow;
             TextForInvalidInput = textForInvalidInput;
         }
-        public void Add(MenuEntry entry)
+
+        internal void Add(MenuEntry<T> entry)
         {
             Entries.Add(NextKey.ToString(), entry);
             NextKey++;
         }
-        public void Run()
+
+        protected MenuEntry<T> GetPickFromUser()
         {
-            bool done = false;
             do
             {
                 Console.Clear();
@@ -34,21 +32,26 @@ namespace DotNetExercise5
                 string input = Console.ReadLine() ?? throw new Exception("The input stream seems to have closed.");
                 if (Entries.ContainsKey(input))
                 {
-                    Entries[input].Execute();
-                    done |= Entries[input].CloseAfter();
+                    return Entries[input];
                 }
                 else
                 {
                     Console.WriteLine(TextForInvalidInput);
                     Console.ReadLine();
                 }
-            } while (!done);
+            } while (true);
         }
+
+        internal T Ask()
+        {
+            return GetPickFromUser().Value;
+        }
+
         private string MenuText()
         {
             StringBuilder buffer = new StringBuilder(TextAbove);
             buffer.Append(Environment.NewLine);
-            foreach (KeyValuePair<string, MenuEntry> pair in Entries)
+            foreach (KeyValuePair<string, MenuEntry<T>> pair in Entries)
             {
                 buffer.Append(pair.Key);
                 buffer.Append(": ");
@@ -58,6 +61,5 @@ namespace DotNetExercise5
             buffer.Append(TextBelow);
             return buffer.ToString();
         }
-
     }
 }

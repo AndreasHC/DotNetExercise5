@@ -2,14 +2,14 @@
 {
     internal class ConsoleUI : IUI
     {
-        private ConsoleMenu MainMenu { get; init; }
+        private ConsoleRepeatingMenu MainMenu { get; init; }
         internal ConsoleUI(IHandler handler)
         {
-            MainMenu = new ConsoleMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
-            MainMenu.Add(new MenuEntry("Avsluta", () => { }, true));
+            MainMenu = new ConsoleRepeatingMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
+            MainMenu.Add(new RepeatingMenuEntry<Action>("Avsluta", () => { }));
             ConsoleUIntQuestion capacityQuestion = new ConsoleUIntQuestion("Vilken kapacitet ska garaget ha?", "Det är inte en giltig kapacitet.");
-            MainMenu.Add(new MenuEntry("Öppna ett nytt garage", () => handler.MakeNewGarage(capacityQuestion.Ask())));
-            MainMenu.Add(new MenuEntry(
+            MainMenu.Add(new MenuEntry<Action>("Öppna ett nytt garage", () => handler.MakeNewGarage(capacityQuestion.Ask())));
+            MainMenu.Add(new MenuEntry<Action>(
                 "Lista innehållet i garaget",
                 () =>
                 {
@@ -21,7 +21,7 @@
                 }));
             ConsoleStringQuestion registrationNumberQuestion = new ConsoleStringQuestion("Vilket registreringsnummer ska fordonet ha?");
             ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
-            MainMenu.Add(new MenuEntry(
+            MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
                 {
