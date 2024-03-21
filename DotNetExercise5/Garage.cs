@@ -6,10 +6,13 @@ namespace DotNetExercise5
     {
         // We are not going to replace the array without replacing the object.
         private T[] Vehicles { get; init; }
+        private uint Capacity { get; set; }
+        private uint Count { get; set; } = 0;
 
         internal Garage(uint capacity)
         {
             Vehicles = new T[capacity];
+            Capacity = capacity;
         }
         public IEnumerator<T> GetEnumerator()
         {
@@ -21,6 +24,18 @@ namespace DotNetExercise5
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        internal bool Add(T vehicle)
+        {
+            if (Count < Capacity)
+            {
+                Vehicles[Count] = vehicle;
+                Count++;
+                return true;
+            }
+            else
+                return false;
         }
     }
 }

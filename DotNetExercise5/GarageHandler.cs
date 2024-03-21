@@ -4,6 +4,16 @@
     {
         Garage<IVehicle>? TheGarage { get; set; }
 
+        public AddResult Add(IVehicle vehicle)
+        {
+            if (TheGarage == null)
+                return AddResult.NoGarage;
+            if (TheGarage.Add(vehicle)) 
+                    return AddResult.Success;
+            else
+                    return AddResult.FullGarage;
+        }
+
         public bool DoToEach(Action<IVehicle> action)
         {
             if (TheGarage != null)

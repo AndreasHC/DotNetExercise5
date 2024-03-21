@@ -2,5 +2,8 @@
 {
     internal class Boat : Vehicle
     {
+        public Boat(string registrationNumber, VehicleColor color, uint numberOfWheels) : base(registrationNumber, color, numberOfWheels)
+        {
+        }
     }
 }
