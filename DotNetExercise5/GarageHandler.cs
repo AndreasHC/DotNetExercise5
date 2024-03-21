@@ -8,10 +8,7 @@
         {
             if (TheGarage == null)
                 return AddResult.NoGarage;
-            if (TheGarage.Add(vehicle)) 
-                    return AddResult.Success;
-            else
-                    return AddResult.FullGarage;
+            return TheGarage.Add(vehicle);
         }
 
         public bool DoToEach(Action<IVehicle> action)
@@ -29,6 +26,17 @@
         public void MakeNewGarage(uint capacity)
         {
             TheGarage = new Garage<IVehicle>(capacity);
+        }
+
+        public RemoveResult Remove(string registrationNumber)
+        {
+            if (TheGarage == null)
+                return RemoveResult.NoGarage;
+
+            if (TheGarage.Remove(registrationNumber))
+                return RemoveResult.Success;
+            else
+                return RemoveResult.NotFound;
         }
     }
 }

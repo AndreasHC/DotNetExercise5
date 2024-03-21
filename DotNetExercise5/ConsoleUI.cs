@@ -40,6 +40,28 @@
                         case AddResult.FullGarage:
                             Console.WriteLine("Garaget är fullt.");
                             break;
+                        case AddResult.DuplicateRegistrationNumber:
+                            Console.WriteLine("Registreringsnumret finns redan i garaget.");
+                            break;
+                    }
+                    Console.WriteLine("Tryck Enter för att fortsätta.");
+                    Console.ReadLine();
+                }));
+            MainMenu.Add(new MenuEntry<Action>(
+                "Ta bort ett fordon",
+                () =>
+                {
+                    switch (handler.Remove(registrationNumberQuestion.Ask()))
+                    {
+                        case RemoveResult.Success:
+                            Console.WriteLine("Det gick bra.");
+                            break;
+                        case RemoveResult.NoGarage:
+                            Console.WriteLine("Det finns inget garage.");
+                            break;
+                        case RemoveResult.NotFound:
+                            Console.WriteLine("fordonet finns inte");
+                            break;
                     }
                     Console.WriteLine("Tryck Enter för att fortsätta.");
                     Console.ReadLine();

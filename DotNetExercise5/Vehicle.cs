@@ -2,7 +2,7 @@
 {
     internal class Vehicle : IVehicle
     {
-        private string RegistrationNumber { get; init; }
+        public string RegistrationNumber { get;private init; }
         private VehicleColor Color { get; init; }
         private uint NumberOfWheels { get; init; }
 

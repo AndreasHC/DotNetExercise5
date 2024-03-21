@@ -2,12 +2,16 @@
 
 namespace DotNetExercise5
 {
-    internal class Garage<T> : IEnumerable<T> where T : IVehicle
+    internal class Garage<T> : IEnumerable<T> where T : class, IVehicle
     {
-        // We are not going to replace the array without replacing the object.
-        private T[] Vehicles { get; init; }
-        private uint Capacity { get; set; }
+        // The array is supposed to have objects up to and excluding position Count, and nulls from position Count and upwards, whenever the object is not executing a method.
+        private T?[] Vehicles { get; init; }
+        private uint Capacity { get; init; }
         private uint Count { get; set; } = 0;
+
+        // There might be a better place for this.
+        // All keys should be return values from string.ToLower. (Which would almost certainly be easier to enforce in that better place.)
+        private Dictionary<string, uint> RegistrationNumberIndex { get; init; } = new Dictionary<string, uint>();
 
         internal Garage(uint capacity)
         {
@@ -16,7 +20,7 @@ namespace DotNetExercise5
         }
         public IEnumerator<T> GetEnumerator()
         {
-            foreach (T vehicle in Vehicles)
+            foreach (T? vehicle in Vehicles)
                 if (vehicle != null)
                     yield return vehicle;
         }
@@ -26,16 +30,33 @@ namespace DotNetExercise5
             return GetEnumerator();
         }
 
-        internal bool Add(T vehicle)
+        internal AddResult Add(T vehicle)
         {
-            if (Count < Capacity)
-            {
-                Vehicles[Count] = vehicle;
-                Count++;
-                return true;
-            }
-            else
+            if (Count >= Capacity)
+                return AddResult.FullGarage;
+            if (RegistrationNumberIndex.ContainsKey(vehicle.RegistrationNumber.ToLower()))
+                return AddResult.DuplicateRegistrationNumber;
+            Vehicles[Count] = vehicle;
+            RegistrationNumberIndex[vehicle.RegistrationNumber.ToLower()] = Count;
+            Count++;
+            return AddResult.Success;
+        }
+
+        internal bool Remove(string registrationNumber)
+        {
+            if (!RegistrationNumberIndex.ContainsKey(registrationNumber.ToLower()))
                 return false;
+            uint index = RegistrationNumberIndex[registrationNumber.ToLower()];
+            Count--;
+            if (Count != index)
+            {
+                T vehicleToMove = Vehicles[Count]!;//If the array has a null value at a position lower than Count at the start of a method, something has gone wrong already.
+                Vehicles[index] = vehicleToMove;
+                RegistrationNumberIndex[vehicleToMove.RegistrationNumber.ToLower()] = index;
+            }
+            Vehicles[Count] = null;
+            RegistrationNumberIndex.Remove(registrationNumber.ToLower());
+            return true;
         }
     }
 }

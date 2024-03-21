@@ -2,5 +2,6 @@
 {
     internal interface IVehicle
     {
+        string RegistrationNumber { get; }
     }
 }
