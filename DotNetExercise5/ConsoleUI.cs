@@ -48,27 +48,48 @@
                 colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
 
             ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
+            ConsoleMenu<Action> AddVehicleMenu = new ConsoleMenu<Action>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det är inte en valbar fordonstyp.");
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Obeskrivligt fordon",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Flygplan",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Bil",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Buss",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Båt",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
+            AddVehicleMenu.Add(new MenuEntry<Action>(
+                "Motorcykel",
+                () =>
+                {
+                    DescribeAddResultToUser(handler.Add(new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
                 {
-                    switch (handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())))
-                    {
-                        case AddResult.Success:
-                            Console.WriteLine("Det gick bra.");
-                            break;
-                        case AddResult.NoGarage:
-                            Console.WriteLine("Det finns inget garage.");
-                            break;
-                        case AddResult.FullGarage:
-                            Console.WriteLine("Garaget är fullt.");
-                            break;
-                        case AddResult.DuplicateRegistrationNumber:
-                            Console.WriteLine("Registreringsnumret finns redan i garaget.");
-                            break;
-                    }
-                    Console.WriteLine("Tryck Enter för att fortsätta.");
-                    Console.ReadLine();
+                    AddVehicleMenu.Ask()();//Gods, this looks stupid.
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Ta bort ett fordon",
@@ -90,6 +111,28 @@
                     Console.ReadLine();
                 }));
         }
+
+        private static void DescribeAddResultToUser(AddResult addResult)
+        {
+            switch (addResult)
+            {
+                case AddResult.Success:
+                    Console.WriteLine("Det gick bra.");
+                    break;
+                case AddResult.NoGarage:
+                    Console.WriteLine("Det finns inget garage.");
+                    break;
+                case AddResult.FullGarage:
+                    Console.WriteLine("Garaget är fullt.");
+                    break;
+                case AddResult.DuplicateRegistrationNumber:
+                    Console.WriteLine("Registreringsnumret finns redan i garaget.");
+                    break;
+            }
+            Console.WriteLine("Tryck Enter för att fortsätta.");
+            Console.ReadLine();
+        }
+
         public void Run()
         {
             MainMenu.Run();
