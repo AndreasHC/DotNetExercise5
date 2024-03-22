@@ -2,13 +2,20 @@
 {
     internal class Airplane : Vehicle
     {
-        public Airplane(string registrationNumber, VehicleColor color, uint numberOfWheels) : base(registrationNumber, color, numberOfWheels)
+        private double Wingspan { get; init; }
+        public Airplane(string registrationNumber, VehicleColor color, uint numberOfWheels, double wingspan) : base(registrationNumber, color, numberOfWheels)
         {
+            Wingspan = wingspan;
         }
 
         protected override string TypeDescription()
         {
             return "Flygplan";
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() +  Environment.NewLine + $"Vingspann: {Wingspan}";
         }
     }
 }

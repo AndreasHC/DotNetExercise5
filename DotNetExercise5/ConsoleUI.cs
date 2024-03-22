@@ -55,11 +55,12 @@
                 {
                     DescribeAddResultToUser(handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
                 }));
+            ConsoleDoubleQuestion wingSpanQuestion = new ConsoleDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det är inte ett giltigt vingspann");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Flygplan",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    DescribeAddResultToUser(handler.Add(new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask())));
                 }));
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Bil",

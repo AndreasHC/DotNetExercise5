@@ -15,7 +15,7 @@ namespace DotNetExercise5
                 {"en av varje", new List<Func<IVehicle>>()
                     {
                         () => new Vehicle("abc123", VehicleColor.Black, 12),
-                        () => new Airplane("cde345", VehicleColor.White, 3),
+                        () => new Airplane("cde345", VehicleColor.White, 3, 12.0),
                         () => new Boat("12345678", VehicleColor.Blue, 0),
                         () => new Bus("jkl567", VehicleColor.Red, 12),
                         () => new Car("vanity", VehicleColor.Blue, 4),
