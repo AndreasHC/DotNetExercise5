@@ -16,10 +16,10 @@ namespace DotNetExercise5
                     {
                         () => new Vehicle("abc123", VehicleColor.Black, 12),
                         () => new Airplane("cde345", VehicleColor.White, 3, 12.0),
-                        () => new Boat("12345678", VehicleColor.Blue, 0),
-                        () => new Bus("jkl567", VehicleColor.Red, 12),
-                        () => new Car("vanity", VehicleColor.Blue, 4),
-                        () => new Motorcycle("12345", VehicleColor.Green, 2)
+                        () => new Boat("12345678", VehicleColor.Blue, 0, 12.5),
+                        () => new Bus("jkl567", VehicleColor.Red, 12, 60),
+                        () => new Car("vanity", VehicleColor.Blue, 4, 4),
+                        () => new Motorcycle("12345", VehicleColor.Green, 2, 6)
                     }
                 },
 

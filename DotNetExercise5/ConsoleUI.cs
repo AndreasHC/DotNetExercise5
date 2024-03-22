@@ -55,36 +55,40 @@
                 {
                     DescribeAddResultToUser(handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
                 }));
-            ConsoleDoubleQuestion wingSpanQuestion = new ConsoleDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det är inte ett giltigt vingspann");
+            ConsoleDoubleQuestion wingSpanQuestion = new ConsoleDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det är inte ett giltigt vingspann.");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Flygplan",
                 () =>
                 {
                     DescribeAddResultToUser(handler.Add(new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask())));
                 }));
+            ConsoleUIntQuestion numberOfDoorsQuestion = new ConsoleUIntQuestion("Hur många dörrar ska bilen ha?", "Det är inte ett giltigt antal dörrar.");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Bil",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    DescribeAddResultToUser(handler.Add(new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfDoorsQuestion.Ask())));
                 }));
+            ConsoleUIntQuestion numberOfSeatsQuestion = new ConsoleUIntQuestion("Hur många säten ska bussen ha?", "Det är inte ett giltigt antal säten.");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Buss",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    DescribeAddResultToUser(handler.Add(new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfSeatsQuestion.Ask())));
                 }));
+            ConsoleDoubleQuestion lengthQuestion = new ConsoleDoubleQuestion("Vad ska båten ha för längd?", "Det var inte en giltig längd");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Båt",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    DescribeAddResultToUser(handler.Add(new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), lengthQuestion.Ask())));
                 }));
+            ConsoleUIntQuestion gearQuestion = new ConsoleUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var itne ett giltigt antal växlar.");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Motorcykel",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    DescribeAddResultToUser(handler.Add(new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), gearQuestion.Ask())));
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",

@@ -2,13 +2,19 @@
 {
     internal class Boat : Vehicle
     {
-        public Boat(string registrationNumber, VehicleColor color, uint numberOfWheels) : base(registrationNumber, color, numberOfWheels)
+        private double Length {  get; init; }
+        public Boat(string registrationNumber, VehicleColor color, uint numberOfWheels, double length) : base(registrationNumber, color, numberOfWheels)
         {
+            Length = length;
         }
 
         protected override string TypeDescription()
         {
             return "Båt";
+        }
+        public override string ToString()
+        {
+            return base.ToString() + Environment.NewLine+$"Längd: {Length}";
         }
     }
 }
