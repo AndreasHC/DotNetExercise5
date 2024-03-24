@@ -48,6 +48,12 @@ namespace DotNetExercise5
             return false;
 
         }
+
+        public IEnumerable<IVehicle>? GetEnumerable()
+        {
+            return TheGarage;
+        }
+
         [MemberNotNull(nameof(TheGarage))]
         public void MakeNewGarage(uint capacity)
         {

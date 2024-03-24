@@ -43,11 +43,72 @@
                     Console.ReadLine();
                 }));
             ConsoleStringQuestion registrationNumberQuestion = new ConsoleStringQuestion("Vilket registreringsnummer ska fordonet ha?");
+            ConsoleMenu<Action> AddVehicleMenu = CreateAddVehicleMenu(handler, registrationNumberQuestion);
+            MainMenu.Add(new MenuEntry<Action>(
+                "Lägg till ett fordon",
+                () =>
+                {
+                    AddVehicleMenu.Ask()();//Gods, this looks stupid.
+                }));
+            MainMenu.Add(new MenuEntry<Action>(
+                "Ta bort ett fordon",
+                () =>
+                {
+                    switch (handler.Remove(registrationNumberQuestion.Ask()))
+                    {
+                        case RemoveResult.Success:
+                            Console.WriteLine("Det gick bra.");
+                            break;
+                        case RemoveResult.NoGarage:
+                            Console.WriteLine("Det finns inget garage.");
+                            break;
+                        case RemoveResult.NotFound:
+                            Console.WriteLine("fordonet finns inte");
+                            break;
+                    }
+                    Console.WriteLine("Tryck Enter för att fortsätta.");
+                    Console.ReadLine();
+                }));
+            MainMenu.Add(new MenuEntry<Action>(
+                "Starta en sökning",
+                () =>
+                {
+                    IEnumerable<IVehicle>? enumerable = handler.GetEnumerable();
+                    if (enumerable == null)
+                    {
+                        Console.WriteLine("Det finns inget garage. Tryck Enter för att fortsätta.");
+                        Console.ReadLine();
+                        return;
+                    }
+                    // TODO It might be worth the effort to restructure the data structure to create the menu object once an only replace (or even reset) the search object.
+                    ConsoleRepeatingMenu SearchMenu = new ConsoleRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
+                    VehicleSearch theSearch = new VehicleSearch(enumerable);
+                    SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
+                    SearchMenu.Add(new MenuEntry<Action>(
+                        "Gör sökningen",
+                        () =>
+                        {
+                            foreach (Vehicle vehicle in theSearch.Run())
+                            {
+                                Console.WriteLine(vehicle);
+                                Console.WriteLine();
+
+                            }
+                            Console.WriteLine("Tryck Enter för att fortsätta.");
+                            Console.ReadLine();
+                        }));
+                    SearchMenu.Run();
+                }));
+        }
+
+        private static ConsoleMenu<Action> CreateAddVehicleMenu(IHandler handler, ConsoleStringQuestion registrationNumberQuestion)
+        {
             ConsoleMenu<VehicleColor> colorMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
             foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
                 colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
 
             ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
+            // Exactly the right amount of repetition to repeatedly get the impulse to factor something out while being unable to actually do so...
             ConsoleMenu<Action> AddVehicleMenu = new ConsoleMenu<Action>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.");
             AddVehicleMenu.Add(new MenuEntry<Action>(
                 "Obeskrivligt fordon",
@@ -90,31 +151,7 @@
                 {
                     DescribeAddResultToUser(handler.Add(new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), gearQuestion.Ask())));
                 }));
-            MainMenu.Add(new MenuEntry<Action>(
-                "Lägg till ett fordon",
-                () =>
-                {
-                    AddVehicleMenu.Ask()();//Gods, this looks stupid.
-                }));
-            MainMenu.Add(new MenuEntry<Action>(
-                "Ta bort ett fordon",
-                () =>
-                {
-                    switch (handler.Remove(registrationNumberQuestion.Ask()))
-                    {
-                        case RemoveResult.Success:
-                            Console.WriteLine("Det gick bra.");
-                            break;
-                        case RemoveResult.NoGarage:
-                            Console.WriteLine("Det finns inget garage.");
-                            break;
-                        case RemoveResult.NotFound:
-                            Console.WriteLine("fordonet finns inte");
-                            break;
-                    }
-                    Console.WriteLine("Tryck Enter för att fortsätta.");
-                    Console.ReadLine();
-                }));
+            return AddVehicleMenu;
         }
 
         private static void DescribeAddResultToUser(AddResult addResult)

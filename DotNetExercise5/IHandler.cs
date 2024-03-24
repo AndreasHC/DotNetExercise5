@@ -8,6 +8,7 @@
         bool DoToEach(Action<IVehicle> action);
         AddResult Add(IVehicle vehicle);
         RemoveResult Remove(string v);
+        IEnumerable<IVehicle>? GetEnumerable();
     }
 
     // This might be better done with exceptions? I do not really have a good sense of how costly exceptions are in this environment.
