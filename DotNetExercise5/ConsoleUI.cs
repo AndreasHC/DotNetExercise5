@@ -43,12 +43,12 @@
                     Console.ReadLine();
                 }));
             ConsoleStringQuestion registrationNumberQuestion = new ConsoleStringQuestion("Vilket registreringsnummer ska fordonet ha?");
-            ConsoleMenu<Action> AddVehicleMenu = CreateAddVehicleMenu(handler, registrationNumberQuestion);
+            ConsoleMenu<Func<IVehicle>> AddVehicleMenu = CreateAddVehicleMenu(handler, registrationNumberQuestion);
             MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
                 {
-                    AddVehicleMenu.Ask()();//Gods, this looks stupid.
+                    DescribeAddResultToUser(handler.Add(AddVehicleMenu.Ask()()));
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Ta bort ett fordon",
@@ -84,30 +84,30 @@
                     ConsoleRepeatingMenu SearchMenu = new ConsoleRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
                     VehicleSearch theSearch = new VehicleSearch(enumerable);
                     SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
-                    ConsoleMenu<Action> addCriterionMenu = new ConsoleMenu<Action>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.");
+                    ConsoleMenu<Func<VehicleCriterion>> addCriterionMenu = new ConsoleMenu<Func<VehicleCriterion>>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.");
                     ConsoleStringQuestion registrationNumberToSearchQuestion = new ConsoleStringQuestion("Vilket registreringsnummer vill du söka efter?");
-                    addCriterionMenu.Add(new MenuEntry<Action>(
+                    addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
                         "Registreringsnummerkriterium",
                         () =>
                         {
                             string registrationNumberToSearch = registrationNumberToSearchQuestion.Ask();
-                            theSearch.AddCriterion(new VehicleCriterion($"Registreringsnummer = {registrationNumberToSearch}", (IVehicle vehicle) => vehicle.RegistrationNumber == registrationNumberToSearch));
+                            return new VehicleCriterion($"Registreringsnummer = {registrationNumberToSearch}", (IVehicle vehicle) => vehicle.RegistrationNumber == registrationNumberToSearch);
                         }));
                     ConsoleMenu<VehicleColor> colorSearchMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska det sökas efter?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
                     foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
                         colorSearchMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
-                    addCriterionMenu.Add(new MenuEntry<Action>(
+                    addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
                         "Färgkriterium",
                         () => 
                         {
                             VehicleColor color = colorSearchMenu.Ask();
-                            theSearch.AddCriterion(new VehicleCriterion($"Färg = {color.Swedish()}", (IVehicle vehicle) => vehicle.Color == color));
+                            return new VehicleCriterion($"Färg = {color.Swedish()}", (IVehicle vehicle) => vehicle.Color == color);
                         }));
                     SearchMenu.Add(new MenuEntry<Action>(
                         "Lägg till ett urvalskriterium.",
                         () =>
                         {
-                            addCriterionMenu.Ask()();
+                            theSearch.AddCriterion(addCriterionMenu.Ask()());
                         }));
                     SearchMenu.Add(new MenuEntry<Action>(
                         "Gör sökningen",
@@ -126,55 +126,54 @@
                 }));
         }
 
-        private static ConsoleMenu<Action> CreateAddVehicleMenu(IHandler handler, ConsoleStringQuestion registrationNumberQuestion)
+        private static ConsoleMenu<Func<IVehicle>> CreateAddVehicleMenu(IHandler handler, ConsoleStringQuestion registrationNumberQuestion)
         {
             ConsoleMenu<VehicleColor> colorMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
             foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
                 colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
 
             ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
-            // Exactly the right amount of repetition to repeatedly get the impulse to factor something out while being unable to actually do so...
-            ConsoleMenu<Action> AddVehicleMenu = new ConsoleMenu<Action>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            ConsoleMenu<Func<IVehicle>> AddVehicleMenu = new ConsoleMenu<Func<IVehicle>>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.");
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Obeskrivligt fordon",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask())));
+                    return new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask());
                 }));
             ConsoleDoubleQuestion wingSpanQuestion = new ConsoleDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det var inte ett giltigt vingspann.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Flygplan",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask())));
+                    return new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask());
                 }));
             ConsoleUIntQuestion numberOfDoorsQuestion = new ConsoleUIntQuestion("Hur många dörrar ska bilen ha?", "Det var inte ett giltigt antal dörrar.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Bil",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfDoorsQuestion.Ask())));
+                    return new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfDoorsQuestion.Ask());
                 }));
             ConsoleUIntQuestion numberOfSeatsQuestion = new ConsoleUIntQuestion("Hur många säten ska bussen ha?", "Det var inte ett giltigt antal säten.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Buss",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfSeatsQuestion.Ask())));
+                    return new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfSeatsQuestion.Ask());
                 }));
             ConsoleDoubleQuestion lengthQuestion = new ConsoleDoubleQuestion("Vad ska båten ha för längd?", "Det var inte en giltig längd.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Båt",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), lengthQuestion.Ask())));
+                    return new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), lengthQuestion.Ask());
                 }));
             ConsoleUIntQuestion gearQuestion = new ConsoleUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var inte ett giltigt antal växlar.");
-            AddVehicleMenu.Add(new MenuEntry<Action>(
+            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 "Motorcykel",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), gearQuestion.Ask())));
+                    return new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), gearQuestion.Ask());
                 }));
             return AddVehicleMenu;
         }
