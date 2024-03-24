@@ -84,6 +84,21 @@
                     ConsoleRepeatingMenu SearchMenu = new ConsoleRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
                     VehicleSearch theSearch = new VehicleSearch(enumerable);
                     SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
+                    ConsoleMenu<Action> addCriterionMenu = new ConsoleMenu<Action>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.");
+                    ConsoleStringQuestion registrationNumberToSearchQuestion = new ConsoleStringQuestion("Vilket registreringsnummer vill du söka efter?");
+                    addCriterionMenu.Add(new MenuEntry<Action>(
+                        "Registreringsnummerkriterium",
+                        () =>
+                        {
+                            string registrationNumberToSearch = registrationNumberToSearchQuestion.Ask();
+                            theSearch.AddCriterion(new VehicleCriterion($"Registreringsnummer = {registrationNumberToSearch}", (IVehicle vehicle) => vehicle.RegistrationNumber == registrationNumberToSearch));
+                        }));
+                    SearchMenu.Add(new MenuEntry<Action>(
+                        "Lägg till ett urvalskriterium.",
+                        () =>
+                        {
+                            addCriterionMenu.Ask()();
+                        }));
                     SearchMenu.Add(new MenuEntry<Action>(
                         "Gör sökningen",
                         () =>
