@@ -93,6 +93,16 @@
                             string registrationNumberToSearch = registrationNumberToSearchQuestion.Ask();
                             theSearch.AddCriterion(new VehicleCriterion($"Registreringsnummer = {registrationNumberToSearch}", (IVehicle vehicle) => vehicle.RegistrationNumber == registrationNumberToSearch));
                         }));
+                    ConsoleMenu<VehicleColor> colorSearchMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska det sökas efter?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
+                    foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
+                        colorSearchMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
+                    addCriterionMenu.Add(new MenuEntry<Action>(
+                        "Färgkriterium",
+                        () => 
+                        {
+                            VehicleColor color = colorSearchMenu.Ask();
+                            theSearch.AddCriterion(new VehicleCriterion($"Färg = {color.Swedish()}", (IVehicle vehicle) => vehicle.Color == color));
+                        }));
                     SearchMenu.Add(new MenuEntry<Action>(
                         "Lägg till ett urvalskriterium.",
                         () =>

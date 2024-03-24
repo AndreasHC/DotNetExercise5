@@ -3,5 +3,6 @@
     internal interface IVehicle
     {
         string RegistrationNumber { get; }
+        VehicleColor Color { get; }
     }
 }

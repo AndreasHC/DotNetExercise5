@@ -3,7 +3,7 @@
     internal class Vehicle : IVehicle
     {
         public string RegistrationNumber { get;private init; }
-        private VehicleColor Color { get; init; }
+        public VehicleColor Color { get; init; }
         private uint NumberOfWheels { get; init; }
 
         public Vehicle(string registrationNumber, VehicleColor color, uint numberOfWheels)
