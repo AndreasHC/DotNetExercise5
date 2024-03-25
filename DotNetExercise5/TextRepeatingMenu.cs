@@ -1,12 +1,8 @@
-﻿using System.Text;
-
-namespace DotNetExercise5
+﻿namespace DotNetExercise5
 {
-    // Any further attempts to make this thing collection-initializer-compatible at this stage is likely to take up my attention for too long.
-
     internal class TextRepeatingMenu : TextMenu<Action>
     {
-        internal TextRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI):base(textAbove, textBelow, textForInvalidInput, textUI)
+        internal TextRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI) : base(textAbove, textBelow, textForInvalidInput, textUI)
         {
         }
 
@@ -16,6 +12,9 @@ namespace DotNetExercise5
             {
                 MenuEntry<Action> entry = GetPickFromUser();
                 entry.Value();
+                // Regular menu entry: keep going
+                // RepeatingMenuEntry with closing behavior turned off: keep going
+                // RepeatingMenuEntry with closing behavior turned on: return control of thread to caller
                 if ((entry as RepeatingMenuEntry<Action>)?.CloseAfter() ?? false)
                     return;
             } while (true);

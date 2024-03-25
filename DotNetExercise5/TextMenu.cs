@@ -4,6 +4,8 @@ namespace DotNetExercise5
 {
     internal class TextMenu<T>
     {
+        // Any further attempts to make this thing collection-initializer-compatible at this stage is likely to take up my attention for too long.
+
         private Dictionary<string, MenuEntry<T>> Entries { get; } = new Dictionary<string, MenuEntry<T>>();
         private int NextKey { get; set; } = 0;
         private string TextAbove { get; init; }
