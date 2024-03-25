@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("DotNetExercise5GarageTest")]
 namespace DotNetExercise5
 {
     internal class Garage<T> : IEnumerable<T> where T : class, IVehicle
