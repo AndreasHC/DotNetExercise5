@@ -4,5 +4,6 @@
     {
         string RegistrationNumber { get; }
         VehicleColor Color { get; }
+        uint NumberOfWheels { get; }
     }
 }

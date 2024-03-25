@@ -4,7 +4,7 @@
     {
         public string RegistrationNumber { get;private init; }
         public VehicleColor Color { get; init; }
-        private uint NumberOfWheels { get; init; }
+        public uint NumberOfWheels { get; init; }
 
         public Vehicle(string registrationNumber, VehicleColor color, uint numberOfWheels)
         {

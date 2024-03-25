@@ -1,4 +1,6 @@
-﻿namespace DotNetExercise5
+﻿using System.Text;
+
+namespace DotNetExercise5
 {
     internal class VehicleSearch
     {
@@ -20,6 +22,17 @@
         internal void AddCriterion(VehicleCriterion criterion)
         {
             Critera.Add(criterion);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder buffer = new StringBuilder();
+            foreach (VehicleCriterion criterion in Critera)
+            {
+                buffer.Append(criterion.ToString());
+                buffer.Append(Environment.NewLine);
+            }
+            return buffer.ToString();
         }
     }
 }
