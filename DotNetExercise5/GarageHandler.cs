@@ -82,5 +82,23 @@ namespace DotNetExercise5
             else
                 return RemoveResult.NotFound;
         }
+        public bool Retrieve(string registrationNumber, out RetrieveObstacle obstacle, [MaybeNullWhen(false)] out IVehicle vehicle)
+        {
+            if (TheGarage == null)
+            {
+                obstacle = RetrieveObstacle.NoGarage;
+                vehicle = null;
+                return false;
+            }
+            if (TheGarage.Retrieve(registrationNumber, out vehicle))
+            {
+                obstacle = RetrieveObstacle.None;
+                return true;
+            }
+            else
+                obstacle = RetrieveObstacle.NotFound;
+                return false;
+
+        }
     }
 }

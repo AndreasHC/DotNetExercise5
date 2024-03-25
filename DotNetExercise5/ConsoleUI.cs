@@ -75,9 +75,26 @@ namespace DotNetExercise5
                             Console.WriteLine("Det finns inget garage.");
                             break;
                         case RemoveResult.NotFound:
-                            Console.WriteLine("fordonet finns inte");
+                            Console.WriteLine("Fordonet finns inte.");
                             break;
                     }
+                    Console.WriteLine("Tryck Enter för att fortsätta.");
+                    Console.ReadLine();
+                }));
+            ConsoleStringQuestion registrationNumberToGetQuestion = new ConsoleStringQuestion("Vilket registreringsnummer vill du hämta?");
+
+            MainMenu.Add(new MenuEntry<Action>(
+                "Hämta ett fordon med ett visst registreringsnummer",
+                () =>
+                {
+                    string chosenRegistrationNumber = registrationNumberToGetQuestion.Ask();
+                    if (handler.Retrieve(chosenRegistrationNumber, out RetrieveObstacle obstacle, out IVehicle? vehicle))
+                        Console.WriteLine(vehicle);
+                    else if (obstacle == RetrieveObstacle.NoGarage)
+                        Console.WriteLine("Det finns inget garage.");
+                    else if (obstacle == RetrieveObstacle.NotFound)
+                        Console.WriteLine("Fordonet finns inte.");
+
                     Console.WriteLine("Tryck Enter för att fortsätta.");
                     Console.ReadLine();
                 }));
