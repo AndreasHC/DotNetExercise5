@@ -2,19 +2,20 @@
 
 namespace DotNetExercise5
 {
-    internal class ConsoleMenu<T>
+    internal class TextMenu<T>
     {
         private Dictionary<string, MenuEntry<T>> Entries { get; } = new Dictionary<string, MenuEntry<T>>();
         private int NextKey { get; set; } = 0;
         private string TextAbove { get; init; }
         private string TextBelow { get; init; }
-        // This text is responsible for informing the user that they need to press "Enter" to return to the menu. This behavior is not configurable at this time.
         private string TextForInvalidInput { get; init; }
-        internal ConsoleMenu(string textAbove, string textBelow, string textForInvalidInput)
+        private ITextUI TextUI { get; init; }
+        internal TextMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI)
         {
             TextAbove = textAbove;
             TextBelow = textBelow;
             TextForInvalidInput = textForInvalidInput;
+            TextUI = textUI;
         }
 
         internal void Add(MenuEntry<T> entry)
@@ -27,17 +28,15 @@ namespace DotNetExercise5
         {
             do
             {
-                Console.Clear();
-                Console.WriteLine(MenuText());
-                string input = Console.ReadLine() ?? throw new Exception("The input stream seems to have closed.");
+                TextUI.EraseHistoryAndShow(MenuText());
+                string input = TextUI.GetStringFromUser();
                 if (Entries.ContainsKey(input))
                 {
                     return Entries[input];
                 }
                 else
                 {
-                    Console.WriteLine(TextForInvalidInput);
-                    Console.ReadLine();
+                    TextUI.ShowAndWaitForReadySignal(TextForInvalidInput);
                 }
             } while (true);
         }

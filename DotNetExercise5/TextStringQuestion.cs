@@ -2,9 +2,9 @@
 
 namespace DotNetExercise5
 {
-    internal class ConsoleStringQuestion : ConsoleParameterQuestion<string>
+    internal class TextStringQuestion : TextParameterQuestion<string>
     {
-        public ConsoleStringQuestion(string wording) : base(wording, "")
+        public TextStringQuestion(string wording, ITextUI textUI) : base(wording, "", textUI)
         {
         }
 

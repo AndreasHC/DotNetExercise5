@@ -2,9 +2,9 @@
 
 namespace DotNetExercise5
 {
-    internal class ConsoleUIntQuestion : ConsoleParameterQuestion<uint>
+    internal class TextUIntQuestion : TextParameterQuestion<uint>
     {
-        public ConsoleUIntQuestion(string wording, string rejection) : base(wording, rejection)
+        public TextUIntQuestion(string wording, string rejection, ITextUI textUI) : base(wording, rejection, textUI)
         {
         }
 

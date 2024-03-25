@@ -2,25 +2,25 @@
 
 namespace DotNetExercise5
 {
-    internal class ConsoleUI : IUI
+    internal class MenuUI : IUI
     {
-        private ConsoleRepeatingMenu MainMenu { get; init; }
+        private TextRepeatingMenu MainMenu { get; init; }
         // I feel like there should be a more object-oriented way.
         private static ImmutableDictionary<Type, string> TypeNames { get; } = new Dictionary<Type, string>()
         {
-            {typeof(Vehicle), "Obskrivligt fordon"},
+            {typeof(Vehicle), "Obeskrivligt fordon"},
             {typeof(Car), "Bil" },
             {typeof(Boat), "Båt" },
             {typeof(Airplane), "Flygplan" },
             {typeof(Bus), "Buss" },
             {typeof(Motorcycle), "Motorcykel" }
         }.ToImmutableDictionary<Type, string>();
-        internal ConsoleUI(IHandler handler)
+        internal MenuUI(IHandler handler, ITextUI lowerUI)
         {
-            MainMenu = new ConsoleRepeatingMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
+            MainMenu = new TextRepeatingMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
             MainMenu.Add(new RepeatingMenuEntry<Action>("Avsluta", () => { }));
-            ConsoleUIntQuestion capacityQuestion = new ConsoleUIntQuestion("Vilken kapacitet ska garaget ha?", "Det är inte en giltig kapacitet.");
-            ConsoleMenu<string> populationQuestion = new ConsoleMenu<string>("Vilken startpopulation ska garaget ha", "Välj en startpopulation.", "Det var inte en valbar startpopulation.");
+            TextUIntQuestion capacityQuestion = new TextUIntQuestion("Vilken kapacitet ska garaget ha?", "Det är inte en giltig kapacitet.", lowerUI);
+            TextMenu<string> populationQuestion = new TextMenu<string>("Vilken startpopulation ska garaget ha", "Välj en startpopulation.", "Det var inte en valbar startpopulation.", lowerUI);
             foreach (string populationString in handler.AvailableStartingPopulations())
                 populationQuestion.Add(new MenuEntry<string>(populationString, populationString));
             MainMenu.Add(new MenuEntry<Action>(
@@ -30,37 +30,40 @@ namespace DotNetExercise5
                     switch (handler.MakeNewGarage(capacityQuestion.Ask(), populationQuestion.Ask()))
                     {
                         case PopulateResult.Success:
-                            Console.WriteLine("Det gick bra.");
+                            lowerUI.ShowAndWaitForReadySignal("Det gick bra.");
                             break;
                         case PopulateResult.InsufficientCapacity:
-                            Console.WriteLine("Kapaciteten och startpopulationen är oförenliga. Garaget har skapats tomt.");
+                            lowerUI.ShowAndWaitForReadySignal("Kapaciteten och startpopulationen är oförenliga. Garaget har skapats tomt.");
                             break;
                         case PopulateResult.UnknownPopulation:
-                            Console.WriteLine("Du verkar ha hittat ett menyvalsalternativ för startpopulation som det här systemet inte kan hantera. Det ska inte hända. Garaget har skapats tomt.");
+                            lowerUI.ShowAndWaitForReadySignal("Du verkar ha hittat ett menyvalsalternativ för startpopulation som det här systemet inte kan hantera. Det ska inte hända. Garaget har skapats tomt.");
                             break;
 
                     };
-                    Console.WriteLine("Tryck enter för att fortsätta.");
-                    Console.ReadLine();
 
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Lista innehållet i garaget",
                 () =>
                 {
-                    if (handler.DoToEach((IVehicle vehicle) => { Console.WriteLine(vehicle); Console.WriteLine(); }))
-                        Console.WriteLine("Tryck Enter för att fortsätta.");
-                    else
-                        Console.WriteLine("Det finns inget garage. Tryck Enter för att fortsätta.");
-                    Console.ReadLine();
+                    IEnumerable<IVehicle>? enumerable = handler.GetEnumerable();
+                    if (enumerable == null)
+                    {
+                        lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
+                        return;
+                    }
+                    List<string> stringRepresentations = new List<string>();
+                    foreach (IVehicle vehicle in enumerable)
+                        stringRepresentations.Add(vehicle.ToString() ?? "Fordon utan textrepresentation"); // The things we do for semi-nonsensical compiler warnings...
+                    lowerUI.ShowListAndWaitForReadySignal(stringRepresentations);
                 }));
-            ConsoleStringQuestion registrationNumberQuestion = new ConsoleStringQuestion("Vilket registreringsnummer ska fordonet ha?");
-            ConsoleMenu<Func<IVehicle>> AddVehicleMenu = CreateAddVehicleMenu(registrationNumberQuestion);
+            TextStringQuestion registrationNumberQuestion = new TextStringQuestion("Vilket registreringsnummer ska fordonet ha?", lowerUI);
+            TextMenu<Func<IVehicle>> AddVehicleMenu = CreateAddVehicleMenu(registrationNumberQuestion, lowerUI);
             MainMenu.Add(new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
                 {
-                    DescribeAddResultToUser(handler.Add(AddVehicleMenu.Ask()()));
+                    DescribeAddResultToUser(handler.Add(AddVehicleMenu.Ask()()), lowerUI);
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Ta bort ett fordon",
@@ -69,19 +72,17 @@ namespace DotNetExercise5
                     switch (handler.Remove(registrationNumberQuestion.Ask()))
                     {
                         case RemoveResult.Success:
-                            Console.WriteLine("Det gick bra.");
+                            lowerUI.ShowAndWaitForReadySignal("Det gick bra.");
                             break;
                         case RemoveResult.NoGarage:
-                            Console.WriteLine("Det finns inget garage.");
+                            lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
                             break;
                         case RemoveResult.NotFound:
-                            Console.WriteLine("Fordonet finns inte.");
+                            lowerUI.ShowAndWaitForReadySignal("Fordonet finns inte.");
                             break;
                     }
-                    Console.WriteLine("Tryck Enter för att fortsätta.");
-                    Console.ReadLine();
                 }));
-            ConsoleStringQuestion registrationNumberToGetQuestion = new ConsoleStringQuestion("Vilket registreringsnummer vill du hämta?");
+            TextStringQuestion registrationNumberToGetQuestion = new TextStringQuestion("Vilket registreringsnummer vill du hämta?", lowerUI);
 
             MainMenu.Add(new MenuEntry<Action>(
                 "Hämta ett fordon med ett visst registreringsnummer",
@@ -89,14 +90,11 @@ namespace DotNetExercise5
                 {
                     string chosenRegistrationNumber = registrationNumberToGetQuestion.Ask();
                     if (handler.Retrieve(chosenRegistrationNumber, out RetrieveObstacle obstacle, out IVehicle? vehicle))
-                        Console.WriteLine(vehicle);
+                        lowerUI.ShowAndWaitForReadySignal(vehicle.ToString() ?? "Fordonet har påträffats, men har ingen textrepresentation.");
                     else if (obstacle == RetrieveObstacle.NoGarage)
-                        Console.WriteLine("Det finns inget garage.");
+                        lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
                     else if (obstacle == RetrieveObstacle.NotFound)
-                        Console.WriteLine("Fordonet finns inte.");
-
-                    Console.WriteLine("Tryck Enter för att fortsätta.");
-                    Console.ReadLine();
+                        lowerUI.ShowAndWaitForReadySignal("Fordonet finns inte.");
                 }));
             MainMenu.Add(new MenuEntry<Action>(
                 "Starta en sökning",
@@ -105,17 +103,16 @@ namespace DotNetExercise5
                     IEnumerable<IVehicle>? enumerable = handler.GetEnumerable();
                     if (enumerable == null)
                     {
-                        Console.WriteLine("Det finns inget garage. Tryck Enter för att fortsätta.");
-                        Console.ReadLine();
+                        lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
                         return;
                     }
                     // TODO It might be worth the effort to restructure the data structure to create the menu object once an only replace (or even reset) the search object. If we build a "SearchHandler" and let the delegates be aware only of that handler, the handler could then replace the search object itself with a new one when a new search is started.
                     // TODO A criterion factory would improve separation of concerns.
-                    ConsoleRepeatingMenu SearchMenu = new ConsoleRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ. Tryck Enter för att komma tillbaka.");
+                    TextRepeatingMenu SearchMenu = new TextRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
                     VehicleSearch theSearch = new VehicleSearch(enumerable);
                     SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
-                    ConsoleMenu<Func<VehicleCriterion>> addCriterionMenu = new ConsoleMenu<Func<VehicleCriterion>>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.");
-                    ConsoleStringQuestion registrationNumberToSearchQuestion = new ConsoleStringQuestion("Vilket registreringsnummer vill du söka efter?");
+                    TextMenu<Func<VehicleCriterion>> addCriterionMenu = new TextMenu<Func<VehicleCriterion>>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.", lowerUI);
+                    TextStringQuestion registrationNumberToSearchQuestion = new TextStringQuestion("Vilket registreringsnummer vill du söka efter?", lowerUI);
                     addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
                         "Registreringsnummerkriterium",
                         () =>
@@ -123,7 +120,7 @@ namespace DotNetExercise5
                             string registrationNumberToSearch = registrationNumberToSearchQuestion.Ask();
                             return new VehicleCriterion($"Registreringsnummer = {registrationNumberToSearch}", (IVehicle vehicle) => vehicle.RegistrationNumber == registrationNumberToSearch);
                         }));
-                    ConsoleMenu<VehicleColor> colorSearchMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska det sökas efter?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
+                    TextMenu<VehicleColor> colorSearchMenu = new TextMenu<VehicleColor>("Vilken färg ska det sökas efter?", "Välj en färg.", "Det var inte en valbar färg.", lowerUI);
                     foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
                         colorSearchMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
                     addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
@@ -133,7 +130,7 @@ namespace DotNetExercise5
                             VehicleColor color = colorSearchMenu.Ask();
                             return new VehicleCriterion($"Färg = {color.Swedish()}", (IVehicle vehicle) => vehicle.Color == color);
                         }));
-                    ConsoleMenu<Type> vehicleTypeSearchMenu = new ConsoleMenu<Type>("Vilken typ ska det sökas efter?", "Välj en typ.", "Det var inte en valbar typ");
+                    TextMenu<Type> vehicleTypeSearchMenu = new TextMenu<Type>("Vilken typ ska det sökas efter?", "Välj en typ.", "Det var inte en valbar typ", lowerUI);
                     foreach (KeyValuePair<Type, string> entry in TypeNames)
                         vehicleTypeSearchMenu.Add(new MenuEntry<Type>(entry.Value, entry.Key));
                     addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
@@ -144,7 +141,7 @@ namespace DotNetExercise5
                             // Exact match, not "is". Although there might be a use case for "is" as well.
                             return new VehicleCriterion($"Typ = {TypeNames[selectedType]}", (IVehicle vehicle) => vehicle.GetType() == selectedType);
                         }));
-                    ConsoleUIntQuestion wheelCriterionQuestion = new ConsoleUIntQuestion("Vilket antal hjul ska det sökas efter?", "Det var inte ett giltigt antal hjul");
+                    TextUIntQuestion wheelCriterionQuestion = new TextUIntQuestion("Vilket antal hjul ska det sökas efter?", "Det var inte ett giltigt antal hjul", lowerUI);
                     addCriterionMenu.Add(new MenuEntry<Func<VehicleCriterion>>(
                         "Hjulkriterium",
                         () =>
@@ -162,70 +159,64 @@ namespace DotNetExercise5
                         "Lista urvalskriterier",
                         () =>
                             {
-                                Console.WriteLine(theSearch);
-                                Console.WriteLine("Tryck Enter för att fortsätta.");
-                                Console.ReadLine();
+                                lowerUI.ShowAndWaitForReadySignal(theSearch.ToString());
                             }));
                     SearchMenu.Add(new MenuEntry<Action>(
-    "Gör sökningen",
-    () =>
-    {
-        foreach (Vehicle vehicle in theSearch.Run())
-        {
-            Console.WriteLine(vehicle);
-            Console.WriteLine();
-
-        }
-        Console.WriteLine("Tryck Enter för att fortsätta.");
-        Console.ReadLine();
-    }));
+                        "Gör sökningen",
+                        () =>
+                        {
+                            List<string> stringRepresentations = new List<string>();
+                            foreach (Vehicle vehicle in theSearch.Run())
+                                stringRepresentations.Add(vehicle.ToString());
+                            lowerUI.ShowListAndWaitForReadySignal(stringRepresentations);
+                        }));
                     SearchMenu.Run();
                 }));
         }
 
-        private static ConsoleMenu<Func<IVehicle>> CreateAddVehicleMenu(ConsoleStringQuestion registrationNumberQuestion)
+        private static TextMenu<Func<IVehicle>> CreateAddVehicleMenu(TextStringQuestion registrationNumberQuestion, ITextUI lowerUI)
         {
-            ConsoleMenu<VehicleColor> colorMenu = new ConsoleMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg. Tryck Enter för att försöka igen.");
+            TextMenu<VehicleColor> colorMenu = new TextMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg.", lowerUI);
             foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
                 colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
 
-            ConsoleUIntQuestion numberofWheelsQuestion = new ConsoleUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.");
-            ConsoleMenu<Func<IVehicle>> AddVehicleMenu = new ConsoleMenu<Func<IVehicle>>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.");
+            TextUIntQuestion numberofWheelsQuestion = new TextUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.", lowerUI);
+            TextMenu<Func<IVehicle>> AddVehicleMenu = new TextMenu<Func<IVehicle>>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 TypeNames[typeof(Vehicle)],
                 () =>
                 {
                     return new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask());
                 }));
-            ConsoleDoubleQuestion wingSpanQuestion = new ConsoleDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det var inte ett giltigt vingspann.");
+            TextDoubleQuestion wingSpanQuestion = new TextDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det var inte ett giltigt vingspann.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 TypeNames[typeof(Airplane)],
                 () =>
                 {
                     return new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask());
                 }));
-            ConsoleUIntQuestion numberOfDoorsQuestion = new ConsoleUIntQuestion("Hur många dörrar ska bilen ha?", "Det var inte ett giltigt antal dörrar.");
+            TextUIntQuestion numberOfDoorsQuestion = new TextUIntQuestion("Hur många dörrar ska bilen ha?", "Det var inte ett giltigt antal dörrar.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 TypeNames[typeof(Car)],
                 () =>
                 {
                     return new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfDoorsQuestion.Ask());
                 }));
-            ConsoleUIntQuestion numberOfSeatsQuestion = new ConsoleUIntQuestion("Hur många säten ska bussen ha?", "Det var inte ett giltigt antal säten.");
+            TextUIntQuestion numberOfSeatsQuestion = new TextUIntQuestion("Hur många säten ska bussen ha?", "Det var inte ett giltigt antal säten.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                TypeNames[typeof(Bus)],
                 () =>
                 {
                     return new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfSeatsQuestion.Ask());
                 }));
-            ConsoleDoubleQuestion lengthQuestion = new ConsoleDoubleQuestion("Vad ska båten ha för längd?", "Det var inte en giltig längd.");
+            TextDoubleQuestion lengthQuestion = new TextDoubleQuestion("Vad ska båten ha för längd?", "Det var inte en giltig längd.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 TypeNames[typeof(Boat)],
                 () =>
                 {
                     return new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), lengthQuestion.Ask());
                 }));
-            ConsoleUIntQuestion gearQuestion = new ConsoleUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var inte ett giltigt antal växlar.");
+            TextUIntQuestion gearQuestion = new TextUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var inte ett giltigt antal växlar.", lowerUI);
             AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
                 TypeNames[typeof(Motorcycle)],
                 () =>
@@ -235,25 +226,23 @@ namespace DotNetExercise5
             return AddVehicleMenu;
         }
 
-        private static void DescribeAddResultToUser(AddResult addResult)
+        private static void DescribeAddResultToUser(AddResult addResult, ITextUI lowerUI)
         {
             switch (addResult)
             {
                 case AddResult.Success:
-                    Console.WriteLine("Det gick bra.");
+                    lowerUI.ShowAndWaitForReadySignal("Det gick bra.");
                     break;
                 case AddResult.NoGarage:
-                    Console.WriteLine("Det finns inget garage.");
+                    lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
                     break;
                 case AddResult.FullGarage:
-                    Console.WriteLine("Garaget är fullt.");
+                    lowerUI.ShowAndWaitForReadySignal("Garaget är fullt.");
                     break;
                 case AddResult.DuplicateRegistrationNumber:
-                    Console.WriteLine("Registreringsnumret finns redan i garaget.");
+                    lowerUI.ShowAndWaitForReadySignal("Registreringsnumret finns redan i garaget.");
                     break;
             }
-            Console.WriteLine("Tryck Enter för att fortsätta.");
-            Console.ReadLine();
         }
 
         public void Run()

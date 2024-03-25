@@ -8,7 +8,7 @@
         internal Manager()
         {
             TheHandler = new GarageHandler();
-            TheUI = new ConsoleUI(TheHandler);
+            TheUI = new MenuUI(TheHandler, new ConsoleTextUI());
         }
 
         internal void Run()

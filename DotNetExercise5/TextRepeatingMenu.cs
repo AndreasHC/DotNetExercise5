@@ -4,10 +4,9 @@ namespace DotNetExercise5
 {
     // Any further attempts to make this thing collection-initializer-compatible at this stage is likely to take up my attention for too long.
 
-    // It might be worthwhile to separate menu entry handling from console handling somehow.
-    internal class ConsoleRepeatingMenu : ConsoleMenu<Action>
+    internal class TextRepeatingMenu : TextMenu<Action>
     {
-        internal ConsoleRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput):base(textAbove, textBelow, textForInvalidInput)
+        internal TextRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI):base(textAbove, textBelow, textForInvalidInput, textUI)
         {
         }
 
