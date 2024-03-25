@@ -1,9 +1,9 @@
 ﻿
 using System.Diagnostics.CodeAnalysis;
 
-namespace DotNetExercise5
+namespace TextMenuInterface
 {
-    internal abstract class TextParameterQuestion<T>
+    public abstract class TextParameterQuestion<T>
     {
 
         private string Wording { get; init; }
@@ -16,7 +16,7 @@ namespace DotNetExercise5
             Rejection = rejection;
             TextUI = textUI;
         }
-        internal T Ask()
+        public T Ask()
         {
             do
             {

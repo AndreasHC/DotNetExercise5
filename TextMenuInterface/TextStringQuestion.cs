@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace DotNetExercise5
+namespace TextMenuInterface
 {
-    internal class TextStringQuestion : TextParameterQuestion<string>
+    public class TextStringQuestion : TextParameterQuestion<string>
     {
         public TextStringQuestion(string wording, ITextUI textUI) : base(wording, "", textUI)
         {

@@ -1,12 +1,12 @@
-﻿namespace DotNetExercise5
+﻿namespace TextMenuInterface
 {
-    internal class TextRepeatingMenu : TextMenu<Action>
+    public class TextRepeatingMenu : TextMenu<Action>
     {
-        internal TextRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI) : base(textAbove, textBelow, textForInvalidInput, textUI)
+        public TextRepeatingMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI) : base(textAbove, textBelow, textForInvalidInput, textUI)
         {
         }
 
-        internal void Run()
+        public void Run()
         {
             do
             {

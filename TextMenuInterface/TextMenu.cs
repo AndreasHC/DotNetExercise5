@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace DotNetExercise5
+namespace TextMenuInterface
 {
-    internal class TextMenu<T>
+    public class TextMenu<T>
     {
         // Any further attempts to make this thing collection-initializer-compatible at this stage is likely to take up my attention for too long.
 
@@ -12,7 +12,7 @@ namespace DotNetExercise5
         private string TextBelow { get; init; }
         private string TextForInvalidInput { get; init; }
         private ITextUI TextUI { get; init; }
-        internal TextMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI)
+        public TextMenu(string textAbove, string textBelow, string textForInvalidInput, ITextUI textUI)
         {
             TextAbove = textAbove;
             TextBelow = textBelow;
@@ -20,13 +20,13 @@ namespace DotNetExercise5
             TextUI = textUI;
         }
 
-        internal void Add(MenuEntry<T> entry)
+        public void Add(MenuEntry<T> entry)
         {
             Entries.Add(NextKey.ToString(), entry);
             NextKey++;
         }
 
-        protected MenuEntry<T> GetPickFromUser()
+        public MenuEntry<T> GetPickFromUser()
         {
             do
             {
@@ -43,7 +43,7 @@ namespace DotNetExercise5
             } while (true);
         }
 
-        internal T Ask()
+        public T Ask()
         {
             return GetPickFromUser().Value;
         }

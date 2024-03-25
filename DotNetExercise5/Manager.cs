@@ -1,4 +1,6 @@
-﻿namespace DotNetExercise5
+﻿using TextMenuInterface;
+
+namespace DotNetExercise5
 {
     internal class Manager
     {

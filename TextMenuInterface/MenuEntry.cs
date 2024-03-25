@@ -1,6 +1,6 @@
-﻿namespace DotNetExercise5
+﻿namespace TextMenuInterface
 {
-    internal class MenuEntry<T>
+    public class MenuEntry<T>
     {
 
         internal string Text { get; init; }

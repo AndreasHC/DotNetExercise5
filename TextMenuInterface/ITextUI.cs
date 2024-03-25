@@ -1,7 +1,7 @@
 ﻿
-namespace DotNetExercise5
+namespace TextMenuInterface
 {
-    internal interface ITextUI
+    public interface ITextUI
     {
         void EraseHistoryAndShow(string textToShow);
         string GetStringFromUser();
