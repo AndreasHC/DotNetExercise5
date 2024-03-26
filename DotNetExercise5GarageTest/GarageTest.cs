@@ -142,6 +142,19 @@ namespace DotNetExercise5GarageTest
             Assert.True(result);
         }
         [Fact]
+        public void Remove_RegistrationNumberPresentInDifferentCase_Success()
+
+        {
+            //Arrange
+            Garage<IVehicle> garage = new Garage<IVehicle>(1);
+            string registrationNumber = "aBc123";
+            garage.Add(new Vehicle(registrationNumber.ToLower(), VehicleColor.Green, 7));
+            //Act
+            bool result = garage.Remove(registrationNumber.ToUpper());
+            //Assert
+            Assert.True(result);
+        }
+        [Fact]
         public void Remove_RegistrationNumberPresent_RegistrationNumberNoLongerPresent()
         {
             //Arrange
@@ -173,6 +186,18 @@ namespace DotNetExercise5GarageTest
             garage.Add(new Vehicle(registrationNumber, VehicleColor.Green, 7));
             //Act
             bool result = garage.Retrieve(registrationNumber, out _);
+            //Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public void Retrieve_RegistrationNumberPresentInDifferentCase_Success()
+        {
+            //Arrange
+            Garage<IVehicle> garage = new Garage<IVehicle>(1);
+            string registrationNumber = "aBc123";
+            garage.Add(new Vehicle(registrationNumber.ToLower(), VehicleColor.Green, 7));
+            //Act
+            bool result = garage.Retrieve(registrationNumber.ToUpper(), out _);
             //Assert
             Assert.True(result);
         }
