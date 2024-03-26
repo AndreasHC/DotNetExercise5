@@ -167,8 +167,8 @@ namespace DotNetExercise5
                         () =>
                         {
                             List<string> stringRepresentations = new List<string>();
-                            foreach (Vehicle vehicle in theSearch.Run())
-                                stringRepresentations.Add(vehicle.ToString());
+                            foreach (IVehicle vehicle in theSearch.Run())
+                                stringRepresentations.Add(vehicle.ToString() ?? "Fordon utan textrepresentation");
                             lowerUI.ShowListAndWaitForReadySignal(stringRepresentations);
                         }));
                     SearchMenu.Run();
