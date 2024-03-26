@@ -10,7 +10,7 @@ namespace DotNetExercise5
         internal Manager()
         {
             TheHandler = new GarageHandler();
-            TheUI = new MenuUI(TheHandler, new ConsoleTextUI(), new SearchHandler());
+            TheUI = new MenuUI(TheHandler, new ConsoleTextUI(), new SearchHandler(), new VehicleFactory());
         }
 
         internal void Run()

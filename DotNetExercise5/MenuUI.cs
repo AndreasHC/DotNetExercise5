@@ -16,13 +16,22 @@ namespace DotNetExercise5
             {typeof(Bus), "Buss" },
             {typeof(Motorcycle), "Motorcykel" }
         }.ToImmutableDictionary<Type, string>();
-        internal MenuUI(IHandler handler, ITextUI lowerUI, ISearchHandler searchHandler)
+        private static ImmutableDictionary<Type, string> DefiniteTypeNames { get; } = new Dictionary<Type, string>()
+        {
+            {typeof(Vehicle), "det obeskrivliga fordonet"},
+            {typeof(Car), "bilen" },
+            {typeof(Boat), "båten" },
+            {typeof(Airplane), "flygplanet" },
+            {typeof(Bus), "bussen" },
+            {typeof(Motorcycle), "motorcykeln" }
+        }.ToImmutableDictionary<Type, string>();
+        internal MenuUI(IHandler handler, ITextUI lowerUI, ISearchHandler searchHandler, IVehicleFactory vehicleFactory)
         {
             MainMenu = new TextRepeatingMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
             MainMenu.Add(new RepeatingMenuEntry<Action>("Avsluta", () => { }));
             MainMenu.Add(CreateGarageCreationOption(handler, lowerUI));
             MainMenu.Add(CreateListGarageContentOption(handler, lowerUI));
-            MainMenu.Add(CreateAddVehicleOption(handler, lowerUI));
+            MainMenu.Add(CreateAddVehicleOption(handler, vehicleFactory, lowerUI));
             MainMenu.Add(CreateRemoveVehicleOption(handler, lowerUI));
 
             MainMenu.Add(CreateRetrieveVehicleOption(handler, lowerUI));
@@ -187,10 +196,9 @@ namespace DotNetExercise5
                 });
         }
 
-        private static MenuEntry<Action> CreateAddVehicleOption(IHandler handler, ITextUI lowerUI)
+        private static MenuEntry<Action> CreateAddVehicleOption(IHandler handler, IVehicleFactory vehicleFactory, ITextUI lowerUI)
         {
-            TextStringQuestion registrationNumberQuestion = new TextStringQuestion("Vilket registreringsnummer ska fordonet ha?", lowerUI);
-            TextMenu<Func<IVehicle>> AddVehicleMenu = CreateAddVehicleMenu(registrationNumberQuestion, lowerUI);
+            TextMenu<Func<IVehicle>> AddVehicleMenu = CreateAddVehicleMenu(vehicleFactory, lowerUI);
             return new MenuEntry<Action>(
                 "Lägg till ett fordon",
                 () =>
@@ -246,55 +254,48 @@ namespace DotNetExercise5
                 });
         }
 
-        private static TextMenu<Func<IVehicle>> CreateAddVehicleMenu(TextStringQuestion registrationNumberQuestion, ITextUI lowerUI)
+        private static TextMenu<Func<IVehicle>> CreateAddVehicleMenu(IVehicleFactory vehicleFactory, ITextUI lowerUI)
         {
-            TextMenu<VehicleColor> colorMenu = new TextMenu<VehicleColor>("Vilken färg ska fordonet ha?", "Välj en färg.", "Det var inte en valbar färg.", lowerUI);
-            foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
-                colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
+            List<Type> availableTypes = vehicleFactory.AvaliableTypes();
 
-            TextUIntQuestion numberofWheelsQuestion = new TextUIntQuestion("Hur många hjul ska fordonet ha?", "Det är inte ett giltigt antal hjul.", lowerUI);
             TextMenu<Func<IVehicle>> AddVehicleMenu = new TextMenu<Func<IVehicle>>("Lägga till hurdant fordon?", "Välj en fordonstyp.", "Det var inte en valbar fordonstyp.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-                TypeNames[typeof(Vehicle)],
-                () =>
+            foreach (Type vehicleType in availableTypes)
+            {
+                HashSet<VehicleCreationParameter> requiredParameters = vehicleFactory.RequiredParameters(vehicleType);
+
+                TextStringQuestion registrationNumberQuestion = new TextStringQuestion($"Vilket registreringsnummer ska {DefiniteTypeNames[vehicleType]} ha?", lowerUI);
+                TextMenu<VehicleColor> colorMenu = new TextMenu<VehicleColor>($"Vilken färg ska {DefiniteTypeNames[vehicleType]} ha?", "Välj en färg.", "Det var inte en valbar färg.", lowerUI);
+                foreach (VehicleColor color in Enum.GetValues(typeof(VehicleColor)))
+                    colorMenu.Add(new MenuEntry<VehicleColor>(color.Swedish(), color));
+                TextUIntQuestion numberOfWheelsQuestion = new TextUIntQuestion($"Hur många hjul ska {DefiniteTypeNames[vehicleType]} ha?", "Det är inte ett giltigt antal hjul.", lowerUI);
+                TextDoubleQuestion wingSpanQuestion = new TextDoubleQuestion($"Vilket vingspann ska {DefiniteTypeNames[vehicleType]} ha?", "Det var inte ett giltigt vingspann.", lowerUI);
+                TextUIntQuestion numberOfDoorsQuestion = new TextUIntQuestion($"Hur många dörrar ska {DefiniteTypeNames[vehicleType]} ha?", "Det var inte ett giltigt antal dörrar.", lowerUI);
+                TextUIntQuestion numberOfSeatsQuestion = new TextUIntQuestion($"Hur många säten ska {DefiniteTypeNames[vehicleType]} ha?", "Det var inte ett giltigt antal säten.", lowerUI);
+                TextDoubleQuestion lengthQuestion = new TextDoubleQuestion($"Vad ska {DefiniteTypeNames[vehicleType]} ha för längd?", "Det var inte en giltig längd.", lowerUI);
+                TextUIntQuestion numberOfGearsQuestion = new TextUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var inte ett giltigt antal växlar.", lowerUI);
+
+                Dictionary<VehicleCreationParameter, Func<object>> obtainFuns = new Dictionary<VehicleCreationParameter, Func<object>>()
                 {
-                    return new Vehicle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask());
-                }));
-            TextDoubleQuestion wingSpanQuestion = new TextDoubleQuestion("Vilket vingspann ska flygplanet ha?", "Det var inte ett giltigt vingspann.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-                TypeNames[typeof(Airplane)],
-                () =>
-                {
-                    return new Airplane(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), wingSpanQuestion.Ask());
-                }));
-            TextUIntQuestion numberOfDoorsQuestion = new TextUIntQuestion("Hur många dörrar ska bilen ha?", "Det var inte ett giltigt antal dörrar.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-                TypeNames[typeof(Car)],
-                () =>
-                {
-                    return new Car(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfDoorsQuestion.Ask());
-                }));
-            TextUIntQuestion numberOfSeatsQuestion = new TextUIntQuestion("Hur många säten ska bussen ha?", "Det var inte ett giltigt antal säten.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-               TypeNames[typeof(Bus)],
-                () =>
-                {
-                    return new Bus(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), numberOfSeatsQuestion.Ask());
-                }));
-            TextDoubleQuestion lengthQuestion = new TextDoubleQuestion("Vad ska båten ha för längd?", "Det var inte en giltig längd.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-                TypeNames[typeof(Boat)],
-                () =>
-                {
-                    return new Boat(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), lengthQuestion.Ask());
-                }));
-            TextUIntQuestion gearQuestion = new TextUIntQuestion("Hur många växlar ska motorcykeln ha?", "Det var inte ett giltigt antal växlar.", lowerUI);
-            AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
-                TypeNames[typeof(Motorcycle)],
-                () =>
-                {
-                    return new Motorcycle(registrationNumberQuestion.Ask(), colorMenu.Ask(), numberofWheelsQuestion.Ask(), gearQuestion.Ask());
-                }));
+                    { VehicleCreationParameter.RegistrationNumber, registrationNumberQuestion.Ask },
+                    { VehicleCreationParameter.Color, () => {return colorMenu.Ask(); } },
+                    { VehicleCreationParameter.NumberOfWheels, () => {return numberOfWheelsQuestion.Ask(); } },
+                    { VehicleCreationParameter.WingSpan, () => {return wingSpanQuestion.Ask();} },
+                    { VehicleCreationParameter.NumberOfDoors, () => {return numberOfDoorsQuestion.Ask();} },
+                    { VehicleCreationParameter.NumberOfSeats, () => {return numberOfSeatsQuestion.Ask();} },
+                    { VehicleCreationParameter.Length, () => {return lengthQuestion.Ask();} },
+                    { VehicleCreationParameter.NumberOfGears, () => {return numberOfGearsQuestion.Ask();} }
+                };
+
+                AddVehicleMenu.Add(new MenuEntry<Func<IVehicle>>(
+                    TypeNames[vehicleType],
+                    () =>
+                    {
+                        Dictionary<VehicleCreationParameter, object> parameters = new Dictionary<VehicleCreationParameter, object>();
+                        foreach (VehicleCreationParameter parameter in requiredParameters)
+                            parameters.Add(parameter, obtainFuns[parameter]());
+                        return vehicleFactory.Create(vehicleType, parameters);
+                    }));
+            }
             return AddVehicleMenu;
         }
 
