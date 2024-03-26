@@ -6,7 +6,7 @@ namespace DotNetExercise5
     internal class MenuUI : IUI
     {
         private TextRepeatingMenu MainMenu { get; init; }
-        // I feel like there should be a more object-oriented way.
+        // I feel like there should be a more object-oriented way. Or something.
         private static ImmutableDictionary<Type, string> TypeNames { get; } = new Dictionary<Type, string>()
         {
             {typeof(Vehicle), "Obeskrivligt fordon"},
@@ -31,11 +31,41 @@ namespace DotNetExercise5
             MainMenu.Add(new RepeatingMenuEntry<Action>("Avsluta", () => { }));
             MainMenu.Add(CreateGarageCreationOption(handler, lowerUI));
             MainMenu.Add(CreateListGarageContentOption(handler, lowerUI));
+            MainMenu.Add(CreateShowTypeDistributionOption(handler, lowerUI));
             MainMenu.Add(CreateAddVehicleOption(handler, vehicleFactory, lowerUI));
             MainMenu.Add(CreateRemoveVehicleOption(handler, lowerUI));
 
             MainMenu.Add(CreateRetrieveVehicleOption(handler, lowerUI));
             MainMenu.Add(CreateSearchOption(handler, searchHandler, lowerUI));
+        }
+
+        private MenuEntry<Action> CreateShowTypeDistributionOption(IHandler handler, ITextUI lowerUI)
+        {
+            return new MenuEntry<Action>(
+                "Visa fördelning av fordonstyper",
+                () =>
+                {
+                    IEnumerable<IVehicle>? content = handler.GetEnumerable();
+                    if (content == null)
+                    {
+                        lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
+                        return;
+                    }
+                    Dictionary<Type, uint> statistics = new Dictionary<Type, uint>();
+                    foreach (IVehicle vehicle in content)
+                    {
+                        Type type = vehicle.GetType();
+                        statistics[type] = (statistics.ContainsKey(type) ? statistics[type] : 0) + 1;
+                    }
+                    List<string> presentation = new List<string>();
+                    foreach (KeyValuePair<Type, uint> statistic in statistics)
+                    {
+                        Type Key = statistic.Key;
+                        string typeString = TypeNames.ContainsKey(Key) ? TypeNames[Key] : $"Oidentifierad fordonstyp: {Key}"; 
+                        presentation.Add($"{statistic.Value} fordon av typ {typeString}");
+                    }
+                    lowerUI.ShowListAndWaitForReadySignal(presentation);
+                });
         }
 
         private static MenuEntry<Action> CreateSearchOption(IHandler handler, ISearchHandler searchHandler, ITextUI lowerUI)
