@@ -37,18 +37,6 @@ namespace DotNetExercise5
             return StartingPopulations.Keys.ToList();
         }
 
-        public bool DoToEach(Action<IVehicle> action)
-        {
-            if (TheGarage != null)
-            {
-                foreach (IVehicle vehicle in TheGarage)
-                    action(vehicle);
-                return true;
-            }
-            return false;
-
-        }
-
         public IEnumerable<IVehicle>? GetEnumerable()
         {
             return TheGarage;
