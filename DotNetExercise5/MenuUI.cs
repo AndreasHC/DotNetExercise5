@@ -16,7 +16,7 @@ namespace DotNetExercise5
             {typeof(Bus), "Buss" },
             {typeof(Motorcycle), "Motorcykel" }
         }.ToImmutableDictionary<Type, string>();
-        internal MenuUI(IHandler handler, ITextUI lowerUI)
+        internal MenuUI(IHandler handler, ITextUI lowerUI, ISearchHandler searchHandler)
         {
             MainMenu = new TextRepeatingMenu("Välkommen", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
             MainMenu.Add(new RepeatingMenuEntry<Action>("Avsluta", () => { }));
@@ -26,11 +26,16 @@ namespace DotNetExercise5
             MainMenu.Add(CreateRemoveVehicleOption(handler, lowerUI));
 
             MainMenu.Add(CreateRetrieveVehicleOption(handler, lowerUI));
-            MainMenu.Add(CreateSearchOption(handler, lowerUI));
+            MainMenu.Add(CreateSearchOption(handler, searchHandler, lowerUI));
         }
 
-        private static MenuEntry<Action> CreateSearchOption(IHandler handler, ITextUI lowerUI)
+        private static MenuEntry<Action> CreateSearchOption(IHandler handler, ISearchHandler searchHandler, ITextUI lowerUI)
         {
+            TextRepeatingMenu SearchMenu = new TextRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
+            SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
+            SearchMenu.Add(CreateAddCriterionOption(searchHandler, lowerUI));
+            SearchMenu.Add(CreateListCriteriaOption(searchHandler, lowerUI));
+            SearchMenu.Add(CreateDoSearchOption(searchHandler, lowerUI));
             return new MenuEntry<Action>(
                 "Starta en sökning",
                  () =>
@@ -41,42 +46,35 @@ namespace DotNetExercise5
                          lowerUI.ShowAndWaitForReadySignal("Det finns inget garage.");
                          return;
                      }
-                     // TODO It might be worth the effort to restructure the data structure to create the menu object once an only replace (or even reset) the search object. If we build a "SearchHandler" and let the delegates be aware only of that handler, the handler could then replace the search object itself with a new one when a new search is started.
-                     // TODO A criterion factory would improve separation of concerns.
-                     TextRepeatingMenu SearchMenu = new TextRepeatingMenu("Hantera sökning", "Välj ett alternativ", "Det var inte ett valbart alternativ.", lowerUI);
-                     VehicleSearch theSearch = new VehicleSearch(enumerable);
-                     SearchMenu.Add(new RepeatingMenuEntry<Action>("Återvänd till huvudmenyn", () => { }));
-                     SearchMenu.Add(CreateAddCriterionOption(theSearch, lowerUI));
-                     SearchMenu.Add(CreateListCriteriaOption(lowerUI, theSearch));
-                     SearchMenu.Add(CreateDoSearchOption(lowerUI, theSearch));
+                     searchHandler.Init(enumerable);
                      SearchMenu.Run();
                  });
         }
 
-        private static MenuEntry<Action> CreateDoSearchOption(ITextUI lowerUI, VehicleSearch theSearch)
+        private static MenuEntry<Action> CreateDoSearchOption(ISearchHandler searchHandler, ITextUI lowerUI)
         {
             return new MenuEntry<Action>(
                 "Gör sökningen",
                 () =>
                 {
                     List<string> stringRepresentations = new List<string>();
-                    foreach (IVehicle vehicle in theSearch.Run())
+                    foreach (IVehicle vehicle in searchHandler.Run())
                         stringRepresentations.Add(vehicle.ToString() ?? "Fordon utan textrepresentation");
                     lowerUI.ShowListAndWaitForReadySignal(stringRepresentations);
                 });
         }
 
-        private static MenuEntry<Action> CreateListCriteriaOption(ITextUI lowerUI, VehicleSearch theSearch)
+        private static MenuEntry<Action> CreateListCriteriaOption(ISearchHandler searchHandler, ITextUI lowerUI)
         {
             return new MenuEntry<Action>(
                 "Lista urvalskriterier",
                 () =>
                 {
-                    lowerUI.ShowAndWaitForReadySignal(theSearch.ToString());
+                    lowerUI.ShowAndWaitForReadySignal(searchHandler.GetCriteriaString());
                 });
         }
 
-        private static MenuEntry<Action> CreateAddCriterionOption(VehicleSearch theSearch, ITextUI lowerUI)
+        private static MenuEntry<Action> CreateAddCriterionOption(ISearchHandler searchHandler, ITextUI lowerUI)
         {
             TextMenu<Func<VehicleCriterion>> addCriterionMenu = new TextMenu<Func<VehicleCriterion>>("Hurdant kriterium?", "Välj en typ av kriterium.", "Det var inte en giltig kriteriumtyp.", lowerUI);
             addCriterionMenu.Add(CreateRegistrationNumberCriterionOption(lowerUI));
@@ -88,7 +86,7 @@ namespace DotNetExercise5
                 "Lägg till ett urvalskriterium",
                 () =>
                 {
-                    theSearch.AddCriterion(addCriterionMenu.Ask()());
+                    searchHandler.AddCriterion(addCriterionMenu.Ask()());
                 });
         }
 
