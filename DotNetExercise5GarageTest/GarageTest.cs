@@ -22,7 +22,7 @@ namespace DotNetExercise5GarageTest
         {
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
-            _ = garage.Add(new Vehicle("abc123", VehicleColor.Green, 7));
+            _ = garage.Add(new MockVehicle("abc123"));
 
             //Act
             IEnumerator<IVehicle> enumerator = garage.GetEnumerator();
@@ -50,7 +50,7 @@ namespace DotNetExercise5GarageTest
 
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
-            _ = garage.Add(new Vehicle("abc123", VehicleColor.Green, 7));
+            _ = garage.Add(new MockVehicle("abc123"));
 
             //Act
             System.Collections.IEnumerator enumerator = ((System.Collections.IEnumerable)garage).GetEnumerator();
@@ -65,7 +65,7 @@ namespace DotNetExercise5GarageTest
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             AddResult expected = AddResult.Success;
             //Act
-            AddResult result = garage.Add(new Vehicle("abc123", VehicleColor.Green, 7));
+            AddResult result = garage.Add(new MockVehicle("abc123"));
             //Assert
             Assert.Equal(result, expected);
         }
@@ -76,7 +76,7 @@ namespace DotNetExercise5GarageTest
             Garage<IVehicle> garage = new Garage<IVehicle>(0);
             AddResult expected = AddResult.FullGarage;
             //Act
-            AddResult result = garage.Add(new Vehicle("abc123", VehicleColor.Green, 7));
+            AddResult result = garage.Add(new MockVehicle("abc123"));
             //Assert
             Assert.Equal(result, expected);
         }
@@ -85,10 +85,10 @@ namespace DotNetExercise5GarageTest
         {
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(2);
-            _ = garage.Add(new Vehicle("abc123", VehicleColor.Blue, 13));
+            _ = garage.Add(new MockVehicle("abc123"));
             AddResult expected = AddResult.DuplicateRegistrationNumber;
             //Act
-            AddResult result = garage.Add(new Vehicle("abc123", VehicleColor.Green, 7));
+            AddResult result = garage.Add(new MockVehicle("abc123"));
 
             //Assert
             Assert.Equal(result, expected);
@@ -98,7 +98,7 @@ namespace DotNetExercise5GarageTest
         {
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
-            IVehicle vehicle = new Vehicle("abc123", VehicleColor.Green, 7);
+            IVehicle vehicle = new MockVehicle("abc123");
             //Act
             _ = garage.Add(vehicle);
             //Assert
@@ -109,8 +109,8 @@ namespace DotNetExercise5GarageTest
         {
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(2);
-            IVehicle vehicle1 = new Vehicle("abc123", VehicleColor.Green, 7);
-            IVehicle vehicle2 = new Vehicle("abc123", VehicleColor.Blue, 13);
+            IVehicle vehicle1 = new MockVehicle("abc123");
+            IVehicle vehicle2 = new MockVehicle("abc123");
             _ = garage.Add(vehicle1);
             //Act
             _ = garage.Add(vehicle2);
@@ -135,7 +135,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "abc123";
-            garage.Add(new Vehicle(registrationNumber, VehicleColor.Green, 7));
+            garage.Add(new MockVehicle(registrationNumber));
             //Act
             bool result = garage.Remove(registrationNumber);
             //Assert
@@ -148,7 +148,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "aBc123";
-            garage.Add(new Vehicle(registrationNumber.ToLower(), VehicleColor.Green, 7));
+            garage.Add(new MockVehicle(registrationNumber.ToLower()));
             //Act
             bool result = garage.Remove(registrationNumber.ToUpper());
             //Assert
@@ -160,7 +160,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "abc123";
-            garage.Add(new Vehicle(registrationNumber, VehicleColor.Green, 7));
+            garage.Add(new MockVehicle(registrationNumber));
             //Act
             _ = garage.Remove(registrationNumber);
             //Assert
@@ -183,7 +183,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "abc123";
-            garage.Add(new Vehicle(registrationNumber, VehicleColor.Green, 7));
+            garage.Add(new MockVehicle(registrationNumber));
             //Act
             bool result = garage.Retrieve(registrationNumber, out _);
             //Assert
@@ -195,7 +195,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "aBc123";
-            garage.Add(new Vehicle(registrationNumber.ToLower(), VehicleColor.Green, 7));
+            garage.Add(new MockVehicle(registrationNumber.ToLower()));
             //Act
             bool result = garage.Retrieve(registrationNumber.ToUpper(), out _);
             //Assert
@@ -207,7 +207,7 @@ namespace DotNetExercise5GarageTest
             //Arrange
             Garage<IVehicle> garage = new Garage<IVehicle>(1);
             string registrationNumber = "abc123";
-            IVehicle vehicle = new Vehicle(registrationNumber, VehicleColor.Green, 7);
+            IVehicle vehicle = new MockVehicle(registrationNumber);
             garage.Add(vehicle);
             //Act
             _ = garage.Retrieve(registrationNumber, out IVehicle? result);
@@ -215,5 +215,15 @@ namespace DotNetExercise5GarageTest
             Assert.Equal(vehicle, result);
         }
 
+        private class MockVehicle : IVehicle
+        {
+            public string RegistrationNumber { get; init; }
+            public VehicleColor Color => VehicleColor.Green;
+            public uint NumberOfWheels => 4;
+            public MockVehicle(string registrationNumber)
+            {
+                RegistrationNumber = registrationNumber;
+            }
+        }
     }
 }
