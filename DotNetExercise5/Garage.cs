@@ -52,7 +52,8 @@ namespace DotNetExercise5
             Count--;
             if (Count != index)
             {
-                T vehicleToMove = Vehicles[Count]!;//If the array has a null value at a position lower than Count at the start of a method, something has gone wrong already.
+                T vehicleToMove = Vehicles[Count] ?? throw new InvalidOperationException("The garage Count property does not match the population state of the inner array."); // Apparently, there is no such thing as a CorruptedObjectException in this environment.
+
                 // If we want to preserve insertion order, we need to do this a little differently.
                 Vehicles[index] = vehicleToMove;
                 RegistrationNumberIndex[vehicleToMove.RegistrationNumber] = index;
@@ -70,7 +71,7 @@ namespace DotNetExercise5
                 return false;
             }
             uint index = RegistrationNumberIndex[registrationNumber];
-            vehicle = Vehicles[index]!;// The registration number index is not supposed to point at null values.
+            vehicle = Vehicles[index] ?? throw new InvalidOperationException("The registration number index of the garage does not match the population state of the array.");// Again, corrupted object state.
             return true;
         }
         // Subclassing Dictionary would have been less writing, but at a higher risk of missing something.
